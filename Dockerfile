@@ -1,0 +1,68 @@
+FROM centos:latest
+
+MAINTAINER Steven <wangxk1991@gmail.com>
+
+WORKDIR /root
+
+COPY config/* /tmp/
+# prepare
+#yum install -y epel-release 安装扩展包，否则安装不了libmcrypt等
+RUN yum install -y epel-release && yum update && yum install -y wget vim gcc cmake make gcc-c++ openssl openssl-devel.x86_64 lsof chkconfig && \
+    mkdir /klnmp /klnmp/log /klnmp/log/php /klnmp/log/mariadb /klnmp/log/nginx && \
+
+#install mariadb-10.1.22
+    yum install -y libevent ncurses-devel bison ncurses && \
+    mkdir /klnmp/mariadb-10.1.22 /klnmp/mariadb-10.1.22/data /klnmp/mariadb-10.1.22/etc && cd && \
+
+    wget https://mirrors.tuna.tsinghua.edu.cn/mariadb//mariadb-10.1.22/source/mariadb-10.1.22.tar.gz && \
+    tar -zxvf mariadb-10.1.22.tar.gz && cd mariadb-10.1.22 && \
+    cmake . -DCMAKE_INSTALL_PREFIX=/klnmp/mariadb-10.1.22 -DMYSQL_DATADIR=/klnmp/mariadb-10.1.22/data -DSYSCONFDIR=/klnmp/mariadb-10.1.22/etc -DMYSQL_UNIX_ADDR=/klnmp/mariadb-10.1.22/mysql.sock \
+    -DWITH_MYISAM_STORAGE_ENGINE=1 -DWITH_INNOBASE_STORAGE_ENGINE=1 -DWITH_ARCHIVE_STORAGE_ENGINE=1 -DWITH_BLACKHOLE_STORAGE_ENGINE=1 -DWITH_FEDERATED_STORAGE_ENGINE=1  -DWITH_PARTITION_STORAGE_ENGINE=1 \
+    -DWITH_SPHINX_STORAGE_ENGINE=1 -DWITH_READLINE=1 -DWITH_SSL=system -DWITH_ZLIB=system -DWITH_LIBWRAP=0 -DDEFAULT_CHARSET=utf8 -DDEFAULT_COLLATION=utf8_general_ci -DENABLED_LOCAL_INFILE=1 \
+    -DENABLED_LOCAL_INFILE=1 -DENABLE_PROFILING=1 && make && make install && \
+
+    cd /klnmp/mariadb-10.1.22/scripts && ./mysql_install_db --datadir=/klnmp/mariadb-10.1.22/data/ --basedir=/klnmp/mariadb-10.1.22/ --user=root && cp ../support-files/mysql.server /etc/rc.d/init.d/mysqld && \
+
+    echo 'export PATH=$PATH:/klnmp/mariadb-10.1.22/bin' >>/etc/profile && source /etc/profile && \
+
+    cp /tmp/my.cnf /klnmp/mariadb-10.1.22/etc && \
+
+#install php
+    yum install -y  libmcrypt.x86_64 libmcrypt-devel.x86_64 mcrypt.x86_64 mhash libxml2 libxml2-devel.x86_64  curl-devel libjpeg-devel libpng-devel freetype-devel gd gd-devel && cd && \
+
+    ln -s /klnmp/mariadb-10.1.22/lib/libmysqlclient.so /usr/lib64/ && ln -s /klnmp/mariadb-10.1.22/lib/libmysqlclient.so.18 /usr/lib64/ && \
+    echo -e "\n/usr/local/lib\n/usr/local/lib64\n/usr/local/related/libmcrypt/lib/\n" >> /etc/ld.so.conf.d/local.conf && ldconfig -v && \
+
+    cd && wget http://cn2.php.net/distributions/php-7.1.4.tar.gz && tar zxvf php-7.1.4.tar.gz && cd php-7.1.4 && \
+
+#64位系统添加--with-libdir=lib64参数
+    cd ~/php-7.1.4 && ./configure --prefix=/klnmp/php-7.1.4 --with-config-file-path=/klnmp/php-7.1.4/etc --with-mysqli=/klnmp/mariadb-10.1.22/bin/mysql_config --with-iconv --with-zlib \
+    --with-libxml-dir=/usr --enable-xml --disable-rpath --enable-bcmath --enable-shmop --enable-sysvsem --enable-inline-optimization --with-curl --enable-mbregex --enable-fpm --enable-mbstring \
+    --with-gd --enable-gd-native-ttf --with-openssl --with-mhash --enable-pcntl --enable-sockets --with-xmlrpc --enable-zip --enable-soap --enable-opcache --with-pdo-mysql --enable-maintainer-zts \
+    --with-mysqli=shared,mysqlnd --with-pdo-mysql=shared,mysqlnd --enable-ftp --enable-session --with-gettext --with-jpeg-dir --with-freetype-dir --without-gdbm --disable-fileinfo --with-mcrypt \
+    --with-iconv --with-libdir=lib64 && make && make install && \
+
+    echo -e '\nexport PATH=/klnmp/php-7.1.4/bin:/klnmp/php-7.1.4/sbin:$PATH\n' >> /etc/profile && source /etc/profile && \
+
+    mv /klnmp/php-7.1.4/etc/php-fpm.d/www.conf.default /klnmp/php-7.1.4/etc/php-fpm.d/www.conf.default.bak && \
+
+    cp /tmp/php-fpm /etc/init.d/php-fpm && cp /tmp/php-fpm.conf /klnmp/php-7.1.4/etc/php-fpm.conf && \
+    cp /tmp/php.ini /klnmp/php-7.1.4/etc/php.ini && cp /tmp/www.conf /klnmp/php-7.1.4/etc/php-fpm.d/www.conf && \
+
+#RUN chmod +x /etc/init.d/php-fpm && chkconfig --add php-fpm
+
+# install nginx
+    yum -y install pcre pcre-devel zlib zlib-devel && cd && \
+
+    wget http://nginx.org/download/nginx-1.12.0.tar.gz && tar zxvf nginx-1.12.0.tar.gz && cd nginx-1.12.0 && \
+    ./configure --prefix=/klnmp/nginx-1.12.0 --with-http_ssl_module --with-http_stub_status_module --with-threads && make && make install && \
+    mkdir /klnmp/nginx-1.12.0/conf/vhost && mv /klnmp/nginx-1.12.0/conf/nginx.conf /klnmp/nginx-1.12.0/conf/nginx.conf.bak && \
+
+    cp /tmp/nginx.conf /klnmp/nginx-1.12.0/conf/nginx.conf && \
+
+    cp /tmp/klnmp.sh /klnmp/klnmp.sh && \
+
+# remove all software
+    cd && rm -rf *.tar.gz mariadb-10.1.22 nginx-1.12.0 php-7.1.4 /tmp
+
+CMD ["/bin/bash"]
