@@ -1,0 +1,68 @@
+#!/bin/bash
+start_all(){
+    out_put "start php..."
+    cd /klnmp/php-7.1.4
+    ./sbin/php-fpm  -y ./etc/php-fpm.conf
+    out_put
+
+    out_put "start mariadb..."
+    /etc/init.d/mysqld start --user=root
+    out_put
+
+    out_put "start nginx..."
+    cd /klnmp/nginx-1.12.0
+    ./sbin/nginx -c ./conf/nginx.conf
+    out_put
+}
+stop_all(){
+    out_put "停止mysql"
+        /etc/init.d/mysqld stop
+    out_put
+
+    out_put "停止php-fpm"
+        killall -9 php-fpm
+    out_put
+
+    out_put "停止nginx"
+        killall -9 nginx
+    out_put
+}
+restart(){
+    #/etc/init.d/mysqld restart --user=root
+    #/etc/init.d/php-fpm restart
+    #./sbin/nginx -s reload
+    stop_all
+    start_all
+}
+out_put(){
+    echo $1
+}
+Usage(){
+    out_put "start: 启动php,mariadb,nginx"
+    out_put "stop: 停止php,mariadb,nginx"
+    out_put "reload: 重启php,mariadb,nginx"
+    out_put "help: 帮助信息"
+}
+if [[ $# == 0 ]]; then
+    out_put "start all development components..."
+    start_all
+else
+    for args in $@
+        do
+            if [[ $args == "start" ]];then
+                start_all
+
+            elif [[ $args == "stop" ]]; then
+                stop_all
+
+            elif [[ $args == "restart" ]]; then
+                restart
+
+            elif [[ $args == "help" ]]; then
+                Usage
+
+            else
+                out_put $args" 参数出错"
+            fi
+        done
+fi

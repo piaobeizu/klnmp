@@ -7,8 +7,8 @@ WORKDIR /root
 COPY config/* /tmp/
 # prepare
 #yum install -y epel-release 安装扩展包，否则安装不了libmcrypt等
-RUN yum install -y epel-release && yum update && yum install -y wget vim gcc cmake make gcc-c++ openssl openssl-devel.x86_64 lsof chkconfig && \
-    mkdir /klnmp /klnmp/log /klnmp/log/php /klnmp/log/mariadb /klnmp/log/nginx && \
+RUN yum install -y epel-release && yum update && yum install -y wget vim gcc cmake make gcc-c++ openssl openssl-devel.x86_64 lsof chkconfig psmisc && \
+    mkdir /klnmp /klnmp/www /klnmp/log /klnmp/log/php /klnmp/log/mariadb /klnmp/log/nginx && cp /tmp/klnmp /klnmp/klnmp && chmod +x /klnmp/klnmp && \
 
 #install mariadb-10.1.22
     yum install -y libevent ncurses-devel bison ncurses && \
@@ -46,8 +46,7 @@ RUN yum install -y epel-release && yum update && yum install -y wget vim gcc cma
 
     mv /klnmp/php-7.1.4/etc/php-fpm.d/www.conf.default /klnmp/php-7.1.4/etc/php-fpm.d/www.conf.default.bak && \
 
-    cp /tmp/php-fpm /etc/init.d/php-fpm && cp /tmp/php-fpm.conf /klnmp/php-7.1.4/etc/php-fpm.conf && \
-    cp /tmp/php.ini /klnmp/php-7.1.4/etc/php.ini && cp /tmp/www.conf /klnmp/php-7.1.4/etc/php-fpm.d/www.conf && \
+    cp /tmp/php-fpm.conf /klnmp/php-7.1.4/etc/php-fpm.conf && cp /tmp/php.ini /klnmp/php-7.1.4/etc/php.ini && cp /tmp/www.conf /klnmp/php-7.1.4/etc/php-fpm.d/www.conf && \
 
 #RUN chmod +x /etc/init.d/php-fpm && chkconfig --add php-fpm
 
@@ -58,11 +57,13 @@ RUN yum install -y epel-release && yum update && yum install -y wget vim gcc cma
     ./configure --prefix=/klnmp/nginx-1.12.0 --with-http_ssl_module --with-http_stub_status_module --with-threads && make && make install && \
     mkdir /klnmp/nginx-1.12.0/conf/vhost && mv /klnmp/nginx-1.12.0/conf/nginx.conf /klnmp/nginx-1.12.0/conf/nginx.conf.bak && \
 
-    cp /tmp/nginx.conf /klnmp/nginx-1.12.0/conf/nginx.conf && \
+    cp /tmp/nginx.conf /klnmp/nginx-1.12.0/conf/nginx.conf && cp /tmp/index.php /klnmp/www/index.php && \
 
-    cp /tmp/klnmp.sh /klnmp/klnmp.sh && \
+    echo -e "\nexport PATH=$PATH:/klnmp\n" >>/etc/profile && source /etc/profile && \
 
 # remove all software
-    cd && rm -rf *.tar.gz mariadb-10.1.22 nginx-1.12.0 php-7.1.4 /tmp
+    cd && rm -rf *.tar.gz mariadb-10.1.22 nginx-1.12.0 php-7.1.4 /tmp/*
 
-CMD ["/bin/bash"]
+EXPOSE 80
+
+CMD [ "sh", "-c", "/bin/bash"]
