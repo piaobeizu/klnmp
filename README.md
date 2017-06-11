@@ -1,8 +1,6 @@
 klnmp
 ===
 
-[![lnmp][]]
-
 简单的lnmp集成环境一键生成工具
 
 
@@ -53,6 +51,9 @@ cd klnmp
 docker build -t klnmp:1.0 . < Dockerfile
 ```
 
+### 安装完成后：
+---
+
 安装成功后，请执行命令：
 ```$xslt
 klnmp start|stop|restart
@@ -61,3 +62,7 @@ klnmp start|stop|restart
 ```$xslt
 source /etc/profile
 ```
+
+项目说明
+---
+
