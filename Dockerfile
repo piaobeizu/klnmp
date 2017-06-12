@@ -60,6 +60,7 @@ RUN yum install -y epel-release && yum update && yum install -y wget vim gcc cma
     cp /tmp/nginx.conf /klnmp/nginx-1.12.0/conf/nginx.conf && cp /tmp/index.php /klnmp/www/index.php && \
 
     echo -e "\nexport PATH=$PATH:/klnmp\n" >>/etc/profile && source /etc/profile && \
+    echo -e "\nsource /etc/profile\n" >>/root/.bashrc && source /root/.bashrc && \
 
 # remove all software
     cd && rm -rf *.tar.gz mariadb-10.1.22 nginx-1.12.0 php-7.1.4 /tmp/*

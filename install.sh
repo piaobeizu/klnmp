@@ -154,6 +154,7 @@ function start() {
     cp config/klnmp /klnmp/klnmp
     chmod +x /klnmp/klnmp
     echo -e "\nexport PATH=$PATH:/klnmp\n" >>/etc/profile && source /etc/profile
+    echo -e "\nsource /etc/profile\n" >>/root/.bashrc && source /root/.bashrc
     #清理安装包
     cd && rm -rf *.tar.gz mariadb-10.1.22 nginx-1.12.0 php-7.1.4
     clear
