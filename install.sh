@@ -160,7 +160,7 @@ function start() {
     yes or not install mariadb, input y or n : " memory
     echo
 
-    if [ "$php" == "y" ] || [ "$php" == "y" ] || [ "$php" == "y" ] || ["$memory" == "y"]; then
+    if [ "$php" == "y" ] || [ "$php" == "y" ] || [ "$php" == "y" ] || [ "$memory" == "y" ]; then
         install_prepare
     fi
 
