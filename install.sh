@@ -135,7 +135,10 @@ function uninstall(){
     echo
     echo "uninstalling klnmp ..."
 
-    rm -rf /klnmp/php-7.1.4 /klnmp/nginx-1.12.0 /klnmp/nginx-1.12.0 /klnmp/mariadb-10.1.22 /klnmp/log /etc/init.d/mysqld
+    rm -rf /klnmp/php-7.1.4 /klnmp/nginx-1.12.0 /klnmp/nginx-1.12.0 /klnmp/jemalloc-4.2.0 /klnmp/mariadb-10.1.22 /klnmp/log /etc/init.d/mysqld
+
+    echo
+    echo "uninstalled klnmp success"
 }
 
 function start() {
