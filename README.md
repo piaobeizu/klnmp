@@ -21,6 +21,13 @@ klnmp
         
 使用手册
 ---
+**安装之前先查看系统当前是否有mysql相关的安装包：**
+```$xslt
+rpm -qa | grep mysql # 查看是否安装了mysql
+rpm -qa | grep mariadb # 查看是否安装了mariadb
+rpm -e --nodeps mariadb-**** #如果有的话就删除
+```
+
 klnmp集成环境拥有以下两种安装方式：
 
 * [install脚本安装](#install脚本安装)

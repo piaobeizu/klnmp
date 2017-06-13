@@ -180,7 +180,7 @@ function start() {
         install_nginx 1.12.0 $memory
     fi
 
-    cp -rf config/klnmp /klnmp/klnmp
+    cp -rf $basepath/config/klnmp /klnmp/klnmp
     chmod +x /klnmp/klnmp
     echo -e "\nexport PATH=$PATH:/klnmp\n" >>/etc/profile && source /etc/profile
     echo -e "\nsource /etc/profile\n" >>/root/.bashrc && source /root/.bashrc
