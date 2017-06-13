@@ -40,7 +40,7 @@ function install_php7() {
     cd
     yum install -y  libmcrypt.x86_64 libmcrypt-devel.x86_64 mcrypt.x86_64 mhash libxml2 libxml2-devel.x86_64  curl-devel libjpeg-devel libpng-devel freetype-devel gd gd-devel
 
-    ln -s /klnmp/mariadb-10.1.22/lib/libmysqlclient.so /usr/lib64/ && ln -s /klnmp/mariadb-10.1.22/lib/libmysqlclient.so.18 /usr/lib64/
+    ln -sf /klnmp/mariadb-10.1.22/lib/libmysqlclient.so /usr/lib64/ && ln -sf /klnmp/mariadb-10.1.22/lib/libmysqlclient.so.18 /usr/lib64/
     echo -e "\n/usr/local/lib\n/usr/local/lib64\n/usr/local/related/libmcrypt/lib/\n" >> /etc/ld.so.conf.d/local.conf && ldconfig -v
 
     wget http://cn2.php.net/distributions/php-$1.tar.gz && tar zxvf php-$1.tar.gz && cd php-$1
@@ -56,7 +56,7 @@ function install_php7() {
 
     mv /klnmp/php-$1/etc/php-fpm.d/www.conf.default /klnmp/php-$1/etc/php-fpm.d/www.conf.default.bak
 
-    cp $basepath/config/php-fpm.conf /klnmp/php-$1/etc/php-fpm.conf && cp $basepath/config/php.ini /klnmp/php-$1/etc/php.ini && cp $basepath/config/www.conf /klnmp/php-$1/etc/php-fpm.d/www.conf
+    cp -rf $basepath/config/php-fpm.conf /klnmp/php-$1/etc/php-fpm.conf && cp -rf $basepath/config/php.ini /klnmp/php-$1/etc/php.ini && cp -rf $basepath/config/www.conf /klnmp/php-$1/etc/php-fpm.d/www.conf
 }
 
 function install_nginx() {
@@ -75,8 +75,8 @@ function install_nginx() {
 
     mkdir /klnmp/nginx-$1/conf/vhost && mv /klnmp/nginx-$1/conf/nginx.conf /klnmp/nginx-$1/conf/nginx.conf.bak
 
-    cp $basepath/config/nginx.conf /klnmp/nginx-$1/conf/nginx.conf
-    cp $basepath/config/index.php /klnmp/www/index.php
+    cp -rf $basepath/config/nginx.conf /klnmp/nginx-$1/conf/nginx.conf
+    cp -rf $basepath/config/index.php /klnmp/www/index.php
 }
 
 function install_mariadb() {
@@ -105,7 +105,7 @@ function install_mariadb() {
 
     echo "export PATH=$PATH:/klnmp/mariadb-$1/bin" >>/etc/profile && source /etc/profile
 
-    cp $basepath/config/my.cnf /klnmp/mariadb-$1/etc
+    cp -rf $basepath/config/my.cnf /klnmp/mariadb-$1/etc
 }
 
 
@@ -118,7 +118,7 @@ function install_jemalloc() {
     wget https://github.com/jemalloc/jemalloc/releases/download/4.2.0/jemalloc-4.2.0.tar.bz2 && tar xf jemalloc-$1.tar.bz2 && cd jemalloc-$1
     ./configure --prefix=/klnmp/jemalloc-$1 && make && make install && make clean
     echo -e "\n/klnmp/jemalloc-$1/lib/\n" >> /etc/ld.so.conf.d/local.conf && ldconfig -v
-    ln -vs /klnmp/jemalloc-$1/lib/libjemalloc.so.2 /usr/local/lib/libjemalloc.so
+    ln -sf /klnmp/jemalloc-$1/lib/libjemalloc.so.2 /usr/local/lib/libjemalloc.so
 }
 
 function uninstall(){
@@ -142,6 +142,8 @@ function uninstall(){
 }
 
 function start() {
+    # 取消cp别名，使cp能够强制覆盖
+    unalias cp
     #statements
     read -p "是否安装php-7.1.4, 请输入 y 或 n 确认:
     yes or not install php-7.1.4, input y or n : " php
@@ -179,7 +181,7 @@ function start() {
         install_nginx 1.12.0 $memory
     fi
 
-    cp config/klnmp /klnmp/klnmp
+    cp -rf config/klnmp /klnmp/klnmp
     chmod +x /klnmp/klnmp
     echo -e "\nexport PATH=$PATH:/klnmp\n" >>/etc/profile && source /etc/profile
     echo -e "\nsource /etc/profile\n" >>/root/.bashrc && source /root/.bashrc
@@ -195,6 +197,8 @@ function start() {
     echo
     echo "========================================================================="
     echo
+    #复制完成后恢复别名
+    alias cp='cp -i'
 }
 if [ "$1" == "uninstall" ]; then
     uninstall
