@@ -130,11 +130,6 @@ function install_jemalloc() {
     ln -vs /usr/local/jemalloc/lib/libjemalloc.so.2 /usr/local/lib/libjemalloc.so
 }
 function start() {
-    if [ "$1" == "uninstall" ]; then
-        uninstall
-        exit
-    fi
-
     #statements
     read -p "是否安装php-7.1.4, 请输入 y 或 n 确认:
     yes or not install php-7.1.4, input y or n : " php
@@ -189,5 +184,8 @@ function start() {
     echo "========================================================================="
     echo
 }
-
+if [ "$1" == "uninstall" ]; then
+    uninstall
+    exit
+fi
 start
