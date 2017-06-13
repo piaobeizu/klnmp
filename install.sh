@@ -143,8 +143,6 @@ function uninstall(){
 }
 
 function start() {
-    # 取消cp别名，使cp能够强制覆盖
-    unalias cp
     #statements
     read -p "是否安装php-7.1.4, 请输入 y 或 n 确认:
     yes or not install php-7.1.4, input y or n : " php
@@ -198,11 +196,13 @@ function start() {
     echo
     echo "========================================================================="
     echo
-    #复制完成后恢复别名
-    alias cp='cp -i'
 }
 if [ "$1" == "uninstall" ]; then
     uninstall
     exit
 fi
+# 取消cp别名，使cp能够强制覆盖
+unalias cp
 start
+#复制完成后恢复别名
+alias cp='cp -i'
