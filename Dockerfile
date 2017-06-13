@@ -14,7 +14,7 @@ RUN yum install -y epel-release && yum update && yum install -y wget vim gcc cma
     yum install -y libevent ncurses-devel bison ncurses && \
     mkdir /klnmp/mariadb-10.1.22 /klnmp/mariadb-10.1.22/data /klnmp/mariadb-10.1.22/etc && cd && \
 
-    wget https://mirrors.tuna.tsinghua.edu.cn/mariadb//mariadb-10.1.22/source/mariadb-10.1.22.tar.gz && \
+    wget https://mirrors.tuna.tsinghua.edu.cn/mariadb/mariadb-10.1.22/source/mariadb-10.1.22.tar.gz && \
     tar -zxvf mariadb-10.1.22.tar.gz && cd mariadb-10.1.22 && \
     cmake . -DCMAKE_INSTALL_PREFIX=/klnmp/mariadb-10.1.22 -DMYSQL_DATADIR=/klnmp/mariadb-10.1.22/data -DSYSCONFDIR=/klnmp/mariadb-10.1.22/etc -DMYSQL_UNIX_ADDR=/klnmp/mariadb-10.1.22/mysql.sock \
     -DWITH_MYISAM_STORAGE_ENGINE=1 -DWITH_INNOBASE_STORAGE_ENGINE=1 -DWITH_ARCHIVE_STORAGE_ENGINE=1 -DWITH_BLACKHOLE_STORAGE_ENGINE=1 -DWITH_FEDERATED_STORAGE_ENGINE=1  -DWITH_PARTITION_STORAGE_ENGINE=1 \
@@ -23,7 +23,7 @@ RUN yum install -y epel-release && yum update && yum install -y wget vim gcc cma
 
     cd /klnmp/mariadb-10.1.22/scripts && ./mysql_install_db --datadir=/klnmp/mariadb-10.1.22/data/ --basedir=/klnmp/mariadb-10.1.22/ --user=root && cp ../support-files/mysql.server /etc/rc.d/init.d/mysqld && \
 
-    echo 'export PATH=$PATH:/klnmp/mariadb-10.1.22/bin' >>/etc/profile && source /etc/profile && \
+#    echo 'export PATH=$PATH:/klnmp/mariadb-10.1.22/bin' >>/etc/profile && source /etc/profile && \
 
     cp /tmp/my.cnf /klnmp/mariadb-10.1.22/etc && \
 
@@ -42,7 +42,7 @@ RUN yum install -y epel-release && yum update && yum install -y wget vim gcc cma
     --with-mysqli=shared,mysqlnd --with-pdo-mysql=shared,mysqlnd --enable-ftp --enable-session --with-gettext --with-jpeg-dir --with-freetype-dir --without-gdbm --disable-fileinfo --with-mcrypt \
     --with-iconv --with-libdir=lib64 && make && make install && \
 
-    echo -e '\nexport PATH=/klnmp/php-7.1.4/bin:/klnmp/php-7.1.4/sbin:$PATH\n' >> /etc/profile && source /etc/profile && \
+#    echo -e '\nexport PATH=/klnmp/php-7.1.4/bin:/klnmp/php-7.1.4/sbin:$PATH\n' >> /etc/profile && source /etc/profile && \
 
     mv /klnmp/php-7.1.4/etc/php-fpm.d/www.conf.default /klnmp/php-7.1.4/etc/php-fpm.d/www.conf.default.bak && \
 
@@ -59,11 +59,13 @@ RUN yum install -y epel-release && yum update && yum install -y wget vim gcc cma
 
     cp /tmp/nginx.conf /klnmp/nginx-1.12.0/conf/nginx.conf && cp /tmp/index.php /klnmp/www/index.php && \
 
-    echo -e "\nexport PATH=$PATH:/klnmp\n" >>/etc/profile && source /etc/profile && \
+#    echo -e "\nexport PATH=$PATH:/klnmp\n" >>/etc/profile && source /etc/profile && \
     echo -e "\nsource /etc/profile\n" >>/root/.bashrc && source /root/.bashrc && \
 
 # remove all software
     cd && rm -rf *.tar.gz mariadb-10.1.22 nginx-1.12.0 php-7.1.4 /tmp/*
+
+ENV PATH=$PATH:/klnmp:/klnmp/php-7.1.4/bin:/klnmp/php-7.1.4/sbin:/klnmp/mariadb-10.1.22/bin
 
 EXPOSE 80
 
