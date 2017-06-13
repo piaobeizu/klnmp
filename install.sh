@@ -100,7 +100,23 @@ function install_mariadb() {
 
     echo "export PATH=$PATH:/klnmp/mariadb-$1/bin" >>/etc/profile && source /etc/profile
 
-    cp $basepath/config/my.cnf /klnmp/mariadb-10.1.22/etc
+    cp $basepath/config/my.cnf /klnmp/mariadb-$1/etc
+}
+
+function uninstall(){
+    echo "停止mysql"
+        /etc/init.d/mysqld stop
+    echo
+
+    echo "停止php-fpm"
+        killall -9 php-fpm
+    echo
+
+    echo "停止nginx"
+        killall -9 nginx
+    echo
+
+    rm -rf /klnmp/php-7.1.4 /klnmp/nginx-1.12.0 /klnmp/nginx-1.12.0 /klnmp/mariadb-10.1.22 /klnmp/log /etc/init.d/mysqld
 }
 
 function install_jemalloc() {
@@ -114,6 +130,11 @@ function install_jemalloc() {
     ln -vs /usr/local/jemalloc/lib/libjemalloc.so.2 /usr/local/lib/libjemalloc.so
 }
 function start() {
+    if [ "$1" == "uninstall" ]; then
+        uninstall
+        exit
+    fi
+
     #statements
     read -p "是否安装php-7.1.4, 请输入 y 或 n 确认:
     yes or not install php-7.1.4, input y or n : " php
@@ -132,23 +153,23 @@ function start() {
     echo
 
     if [ "$php" == "y" ] || [ "$php" == "y" ] || [ "$php" == "y" ] || ["$memory" == "y"]; then
-    install_prepare
+        install_prepare
     fi
 
     if [ "$memory" == "y" ]; then
-    install_jemalloc -4.2.0
+        install_jemalloc -4.2.0
     fi
 
     if [ "$db" == "y" ]; then
-    install_mariadb 10.1.22 $memory
+        install_mariadb 10.1.22 $memory
     fi
 
     if [ "$php" == "y" ]; then
-    install_php7 7.1.4
+        install_php7 7.1.4
     fi
 
     if [ "$web" == "y" ]; then
-    install_nginx 1.12.0
+        install_nginx 1.12.0
     fi
 
     cp config/klnmp /klnmp/klnmp

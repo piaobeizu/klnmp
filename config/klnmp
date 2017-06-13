@@ -14,6 +14,7 @@ start_all(){
     ./sbin/nginx -c ./conf/nginx.conf
     out_put
 }
+
 stop_all(){
     out_put "停止mysql"
         /etc/init.d/mysqld stop
@@ -27,12 +28,21 @@ stop_all(){
         killall -9 nginx
     out_put
 }
+
 restart(){
     #/etc/init.d/mysqld restart --user=root
     #/etc/init.d/php-fpm restart
     #./sbin/nginx -s reload
     stop_all
     start_all
+}
+
+uninstall(){
+    #/etc/init.d/mysqld restart --user=root
+    #/etc/init.d/php-fpm restart
+    #./sbin/nginx -s reload
+    stop_all
+    rm -rf /klnmp/php-7.1.4 /klnmp/nginx-1.12.0 /klnmp/nginx-1.12.0 /klnmp/mariadb-10.1.22 /klnmp/log /etc/init.d/mysqld
 }
 out_put(){
     echo $1
@@ -41,6 +51,7 @@ Usage(){
     out_put "start: 启动php,mariadb,nginx"
     out_put "stop: 停止php,mariadb,nginx"
     out_put "reload: 重启php,mariadb,nginx"
+    out_put "uninstall: 卸载klnmp"
     out_put "help: 帮助信息"
 }
 if [[ $# == 0 ]]; then
@@ -57,6 +68,9 @@ else
 
             elif [[ $args == "restart" ]]; then
                 restart
+
+            elif [[ $args == "uninstall" ]]; then
+                uninstall
 
             elif [[ $args == "help" ]]; then
                 Usage
