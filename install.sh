@@ -6,6 +6,7 @@ if [ $(id -u) != "0" ]; then
     echo "Error: You must be root to run this script, please use root to install klnmp"
     exit 1
 fi
+set -e
 basepath=$(cd `dirname $0`; pwd)
 clear
 echo
@@ -186,7 +187,7 @@ function start() {
     echo -e "\nexport PATH=$PATH:/klnmp\n" >>/etc/profile && source /etc/profile
     echo -e "\nsource /etc/profile\n" >>/root/.bashrc && source /root/.bashrc
     #清理安装包
-    cd && rm -rf *.tar.gz *.tar.bz2 mariadb-10.1.22 nginx-1.12.0 php-7.1.4
+    cd && rm -rf php* nginx* mariadb* jemalloc*
     clear
     echo
     echo "========================================================================="
