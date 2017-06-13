@@ -6,7 +6,7 @@ if [ $(id -u) != "0" ]; then
     echo "Error: You must be root to run this script, please use root to install klnmp"
     exit 1
 fi
-set -e
+#set -e
 basepath=$(cd `dirname $0`; pwd)
 clear
 echo
