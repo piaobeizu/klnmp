@@ -116,7 +116,7 @@ function uninstall(){
         killall -9 nginx
     echo
     echo "uninstalling klnmp ..."
-    
+
     rm -rf /klnmp/php-7.1.4 /klnmp/nginx-1.12.0 /klnmp/nginx-1.12.0 /klnmp/mariadb-10.1.22 /klnmp/log /etc/init.d/mysqld
 }
 
@@ -125,7 +125,7 @@ function install_jemalloc() {
     echo "开始安装jemalloc-$1"
     echo
     cd
-    wget https://github.com/jemalloc/jemalloc/releases/download/4.2.0/jemalloc-4.2.0.tar.bz2 && cd jemalloc-4.2.0
+    wget https://github.com/jemalloc/jemalloc/releases/download/4.2.0/jemalloc-4.2.0.tar.bz2 && tar xf jemalloc-$1.tar.bz2 && cd jemalloc-4.2.0
     ./configure --prefix=/usr/local/jemalloc && make && make install
     echo -e '\n/usr/local/jemalloc/lib/\n' >> /etc/ld.so.conf.d/local.conf && ldconfig -v
     ln -vs /usr/local/jemalloc/lib/libjemalloc.so.2 /usr/local/lib/libjemalloc.so
@@ -153,7 +153,7 @@ function start() {
     fi
 
     if [ "$memory" == "y" ]; then
-        install_jemalloc -4.2.0
+        install_jemalloc 4.2.0
     fi
 
     if [ "$db" == "y" ]; then
@@ -173,7 +173,7 @@ function start() {
     echo -e "\nexport PATH=$PATH:/klnmp\n" >>/etc/profile && source /etc/profile
     echo -e "\nsource /etc/profile\n" >>/root/.bashrc && source /root/.bashrc
     #清理安装包
-    cd && rm -rf *.tar.gz mariadb-10.1.22 nginx-1.12.0 php-7.1.4
+    cd && rm -rf *.tar.gz *.tar.bz2 mariadb-10.1.22 nginx-1.12.0 php-7.1.4
     clear
     echo
     echo "========================================================================="
