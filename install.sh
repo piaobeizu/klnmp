@@ -50,7 +50,7 @@ function install_php7() {
       --with-libxml-dir=/usr --enable-xml --disable-rpath --enable-bcmath --enable-shmop --enable-sysvsem --enable-inline-optimization --with-curl --enable-mbregex --enable-fpm --enable-mbstring \
       --with-gd --enable-gd-native-ttf --with-openssl --with-mhash --enable-pcntl --enable-sockets --with-xmlrpc --enable-zip --enable-soap --enable-opcache --with-pdo-mysql --enable-maintainer-zts \
       --with-mysqli=shared,mysqlnd --with-pdo-mysql=shared,mysqlnd --enable-ftp --enable-session --with-gettext --with-jpeg-dir --with-freetype-dir --without-gdbm --disable-fileinfo --with-mcrypt \
-      --with-iconv --with-libdir=lib64 && make && make install
+      --with-iconv --with-libdir=lib64 && make && make install && make clean
 
     echo -e "\nexport PATH=/klnmp/php-$1/bin:/klnmp/php-$1/sbin:$PATH\n" >> /etc/profile && source /etc/profile
 
@@ -67,7 +67,12 @@ function install_nginx() {
     yum -y install pcre pcre-devel zlib zlib-devel
 
     wget http://nginx.org/download/nginx-$1.tar.gz && tar zxvf nginx-$1.tar.gz && cd nginx-$1
-    ./configure --prefix=/klnmp/nginx-$1 --with-http_ssl_module --with-http_stub_status_module --with-threads && make && make install
+    if [ "$2" == "y" ]; then
+        ./configure --prefix=/klnmp/nginx-$1 --with-http_ssl_module --with-http_stub_status_module --with-threads --with-ld-opt="-ljemalloc" && make && make install
+    else
+        ./configure --prefix=/klnmp/nginx-$1 --with-http_ssl_module --with-http_stub_status_module --with-threads  && make && make install && make clean
+    fi
+
     mkdir /klnmp/nginx-$1/conf/vhost && mv /klnmp/nginx-$1/conf/nginx.conf /klnmp/nginx-$1/conf/nginx.conf.bak
 
     cp $basepath/config/nginx.conf /klnmp/nginx-$1/conf/nginx.conf
@@ -94,13 +99,26 @@ function install_mariadb() {
         -DWITH_MYISAM_STORAGE_ENGINE=1 -DWITH_INNOBASE_STORAGE_ENGINE=1 -DWITH_ARCHIVE_STORAGE_ENGINE=1 -DWITH_BLACKHOLE_STORAGE_ENGINE=1 -DWITH_FEDERATED_STORAGE_ENGINE=1  -DWITH_PARTITION_STORAGE_ENGINE=1 \
         -DWITH_SPHINX_STORAGE_ENGINE=1 -DWITH_READLINE=1 -DWITH_SSL=system -DWITH_ZLIB=system -DWITH_LIBWRAP=0 -DDEFAULT_CHARSET=utf8 -DDEFAULT_COLLATION=utf8_general_ci -DENABLED_LOCAL_INFILE=1 -DENABLE_PROFILING=1
     fi
-    make && make install
+    make && make install && make clean
 
     cd /klnmp/mariadb-$1/scripts && ./mysql_install_db --datadir=/klnmp/mariadb-$1/data/ --basedir=/klnmp/mariadb-$1/ --user=root && cp ../support-files/mysql.server /etc/rc.d/init.d/mysqld
 
     echo "export PATH=$PATH:/klnmp/mariadb-$1/bin" >>/etc/profile && source /etc/profile
 
     cp $basepath/config/my.cnf /klnmp/mariadb-$1/etc
+}
+
+
+function install_jemalloc() {
+    #statements
+    echo "开始安装jemalloc-$1"
+    echo
+    mkdir /klnmp/jemalloc-$1
+    cd
+    wget https://github.com/jemalloc/jemalloc/releases/download/4.2.0/jemalloc-4.2.0.tar.bz2 && tar xf jemalloc-$1.tar.bz2 && cd jemalloc-$1
+    ./configure --prefix=/klnmp/jemalloc-$1 && make && make install && make clean
+    echo -e "\n/klnmp/jemalloc-$1/lib/\n" >> /etc/ld.so.conf.d/local.conf && ldconfig -v
+    ln -vs /klnmp/jemalloc-$1/lib/libjemalloc.so.2 /usr/local/lib/libjemalloc.so
 }
 
 function uninstall(){
@@ -120,16 +138,6 @@ function uninstall(){
     rm -rf /klnmp/php-7.1.4 /klnmp/nginx-1.12.0 /klnmp/nginx-1.12.0 /klnmp/mariadb-10.1.22 /klnmp/log /etc/init.d/mysqld
 }
 
-function install_jemalloc() {
-    #statements
-    echo "开始安装jemalloc-$1"
-    echo
-    cd
-    wget https://github.com/jemalloc/jemalloc/releases/download/4.2.0/jemalloc-4.2.0.tar.bz2 && tar xf jemalloc-$1.tar.bz2 && cd jemalloc-4.2.0
-    ./configure --prefix=/usr/local/jemalloc && make && make install
-    echo -e '\n/usr/local/jemalloc/lib/\n' >> /etc/ld.so.conf.d/local.conf && ldconfig -v
-    ln -vs /usr/local/jemalloc/lib/libjemalloc.so.2 /usr/local/lib/libjemalloc.so
-}
 function start() {
     #statements
     read -p "是否安装php-7.1.4, 请输入 y 或 n 确认:
@@ -165,7 +173,7 @@ function start() {
     fi
 
     if [ "$web" == "y" ]; then
-        install_nginx 1.12.0
+        install_nginx 1.12.0 $memory
     fi
 
     cp config/klnmp /klnmp/klnmp
