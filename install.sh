@@ -6,7 +6,7 @@ if [ $(id -u) != "0" ]; then
     echo "Error: You must be root to run this script, please use root to install klnmp"
     exit 1
 fi
-#set -e
+set -e
 basepath=$(cd `dirname $0`; pwd)
 clear
 echo
@@ -202,7 +202,7 @@ if [ "$1" == "uninstall" ]; then
     exit
 fi
 # 取消cp别名，使cp能够强制覆盖
-unalias cp
+#unalias cp
 start
 #复制完成后恢复别名
-alias cp='cp -i'
+#alias cp='cp -i'
