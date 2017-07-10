@@ -7,7 +7,7 @@ WORKDIR /root
 COPY config/* /tmp/
 # prepare
 #yum install -y epel-release 安装扩展包，否则安装不了libmcrypt等
-RUN yum install -y epel-release && yum update && yum install -y wget vim gcc cmake make gcc-c++ openssl openssl-devel.x86_64 lsof chkconfig psmisc && \
+RUN yum install -y epel-release && yum update -y && yum install -y wget vim gcc cmake make gcc-c++ openssl openssl-devel.x86_64 lsof chkconfig psmisc && \
     mkdir /klnmp /klnmp/www /klnmp/log /klnmp/log/php /klnmp/log/mariadb /klnmp/log/nginx && cp /tmp/klnmp /klnmp/klnmp && chmod +x /klnmp/klnmp && \
 
 #install mariadb-10.1.22
