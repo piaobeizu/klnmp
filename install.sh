@@ -27,7 +27,7 @@ function install_prepare() {
     #statements
     echo "开始安装前的准备工作 ..."
     echo
-    yum install -y epel-release && yum update
+    yum install -y epel-release && yum -y update
     yum install -y wget vim gcc cmake make gcc-c++ openssl openssl-devel.x86_64 lsof chkconfig psmisc
     echo "创建klnmp项目 ..."
     echo
@@ -69,7 +69,7 @@ function install_nginx() {
 
     wget http://nginx.org/download/nginx-$1.tar.gz && tar zxvf nginx-$1.tar.gz && cd nginx-$1
     if [ "$2" == "y" ]; then
-        ./configure --prefix=/klnmp/nginx-$1 --with-http_ssl_module --with-http_stub_status_module --with-threads --with-ld-opt="-ljemalloc" && make && make install
+        ./configure --prefix=/klnmp/nginx-$1 --with-http_ssl_module --with-http_stub_status_module --with-threads --with-ld-opt="-L /usr/local/lib64" && make && make install
     else
         ./configure --prefix=/klnmp/nginx-$1 --with-http_ssl_module --with-http_stub_status_module --with-threads  && make && make install && make clean
     fi
@@ -88,7 +88,8 @@ function install_mariadb() {
     yum install -y ncurses-devel bison ncurses
     mkdir /klnmp/mariadb-$1 /klnmp/mariadb-$1/data /klnmp/mariadb-$1/etc && cd
 
-    wget https://mirrors.tuna.tsinghua.edu.cn/mariadb//mariadb-$1/source/mariadb-$1.tar.gz
+    #wget https://mirrors.tuna.tsinghua.edu.cn/mariadb//mariadb-$1/source/mariadb-$1.tar.gz
+    wget http://ftp.hosteurope.de/mirror/archive.mariadb.org//mariadb-$1/source/mariadb-$1.tar.gz
     tar -zxvf mariadb-$1.tar.gz && cd mariadb-$1
     if [ "$2" == "y" ]; then
         cmake . -DCMAKE_INSTALL_PREFIX=/klnmp/mariadb-$1 -DMYSQL_DATADIR=/klnmp/mariadb-$1/data -DSYSCONFDIR=/klnmp/mariadb-$1/etc -DMYSQL_UNIX_ADDR=/klnmp/mariadb-$1/mysql.sock \
