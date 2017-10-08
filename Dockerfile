@@ -1,4 +1,4 @@
-FROM centos:latest
+FROM centos:7.3
 
 MAINTAINER Steven <wangxk1991@gmail.com>
 
