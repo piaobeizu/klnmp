@@ -6,6 +6,7 @@ if [ $(id -u) != "0" ]; then
     echo "Error: You must be root to run this script, please use root to install klnmp"
     exit 1
 fi
+# check memory is or not enough
 phymem=`free | grep "Mem:" |awk '{print $2}'`
 if [ "$phymem" -le "1024000" ]; then
     echo "memory is not enough！start use the swap"
@@ -16,6 +17,8 @@ if [ "$phymem" -le "1024000" ]; then
     swapon /swapfile
 fi
 set -e
+SOFTS = 0
+INSTALLED = 0
 basepath=$(cd `dirname $0`; pwd)
 clear
 echo
@@ -32,6 +35,10 @@ function output() {
     echo $@
 }
 
+function check_memory_and_swap(){
+
+}
+
 function install_prepare() {
     #statements
     echo "开始安装前的准备工作 ..."
@@ -41,6 +48,27 @@ function install_prepare() {
     echo "创建klnmp项目 ..."
     echo
     mkdir /klnmp /klnmp/www /klnmp/log /klnmp/log/php /klnmp/log/mariadb /klnmp/log/nginx
+}
+
+function uninstall(){
+    echo "停止mysql"
+        /etc/init.d/mysqld stop
+    echo
+
+    echo "停止php-fpm"
+        killall -9 php-fpm
+    echo
+
+    echo "停止nginx"
+        killall -9 nginx
+    echo
+    echo "uninstalling klnmp ..."
+
+    rm -rf /klnmp/php-7.1.4 /klnmp/nginx-1.12.0 /klnmp/nginx-1.12.0 /klnmp/jemalloc-4.2.0 /klnmp/mariadb-10.1.22 /klnmp/log /etc/init.d/mysqld
+    cd && rm -rf php* nginx* mariadb* jemalloc*
+    
+    echo
+    echo "uninstalled klnmp success"
 }
 
 function install_php7() {
@@ -60,7 +88,7 @@ function install_php7() {
       --with-libxml-dir=/usr --enable-xml --disable-rpath --enable-bcmath --enable-shmop --enable-sysvsem --enable-inline-optimization --with-curl --enable-mbregex --enable-fpm --enable-mbstring \
       --with-gd --enable-gd-native-ttf --with-openssl --with-mhash --enable-pcntl --enable-sockets --with-xmlrpc --enable-zip --enable-soap --enable-opcache --with-pdo-mysql --enable-maintainer-zts \
       --with-mysqli=shared,mysqlnd --with-pdo-mysql=shared,mysqlnd --enable-ftp --enable-session --with-gettext --with-jpeg-dir --with-freetype-dir --without-gdbm --disable-fileinfo --with-mcrypt \
-      --with-iconv --with-libdir=lib64 && make && make install && make clean
+      --with-iconv --with-libdir=lib64 && make || (echo "configure of php is error！";uninstall)  && make install || (echo "make php error！";uninstall) && make clean || (echo "make install php error！";uninstall)
 
     echo -e "\nexport PATH=/klnmp/php-$1/bin:/klnmp/php-$1/sbin:$PATH\n" >> /etc/profile && source /etc/profile
 
@@ -80,7 +108,7 @@ function install_nginx() {
     if [ "$2" == "y" ]; then
         ./configure --prefix=/klnmp/nginx-$1 --with-http_ssl_module --with-http_stub_status_module --with-threads --with-ld-opt="-L /usr/local/lib64" && make && make install
     else
-        ./configure --prefix=/klnmp/nginx-$1 --with-http_ssl_module --with-http_stub_status_module --with-threads  && make && make install && make clean
+        ./configure --prefix=/klnmp/nginx-$1 --with-http_ssl_module --with-http_stub_status_module --with-threads  && make || (echo "configure of nginx is error！";uninstall) && make install || (echo "make nginx error！";uninstall) && make clean || (echo "make install nginx error！";uninstall)
     fi
 
     mkdir /klnmp/nginx-$1/conf/vhost && mv /klnmp/nginx-$1/conf/nginx.conf /klnmp/nginx-$1/conf/nginx.conf.bak
@@ -104,13 +132,14 @@ function install_mariadb() {
         cmake . -DCMAKE_INSTALL_PREFIX=/klnmp/mariadb-$1 -DMYSQL_DATADIR=/klnmp/mariadb-$1/data -DSYSCONFDIR=/klnmp/mariadb-$1/etc -DMYSQL_UNIX_ADDR=/klnmp/mariadb-$1/mysql.sock \
         -DWITH_MYISAM_STORAGE_ENGINE=1 -DWITH_INNOBASE_STORAGE_ENGINE=1 -DWITH_ARCHIVE_STORAGE_ENGINE=1 -DWITH_BLACKHOLE_STORAGE_ENGINE=1 -DWITH_FEDERATED_STORAGE_ENGINE=1  -DWITH_PARTITION_STORAGE_ENGINE=1 \
         -DWITH_SPHINX_STORAGE_ENGINE=1 -DWITH_READLINE=1 -DWITH_SSL=system -DWITH_ZLIB=system -DWITH_LIBWRAP=0 -DDEFAULT_CHARSET=utf8 -DDEFAULT_COLLATION=utf8_general_ci -DENABLED_LOCAL_INFILE=1 \
-        -DCMAKE_EXE_LINKER_FLAGS='-ljemalloc' -DWITH_SAFEMALLOC=OFF -DENABLE_PROFILING=1 -DWITHOUT_TOKUDB=1
+        -DCMAKE_EXE_LINKER_FLAGS='-ljemalloc' -DWITH_SAFEMALLOC=OFF -DENABLE_PROFILING=1 -DWITHOUT_TOKUDB=1 || (echo "configure of mariadb is error！";uninstall)
     else
         cmake . -DCMAKE_INSTALL_PREFIX=/klnmp/mariadb-$1 -DMYSQL_DATADIR=/klnmp/mariadb-$1/data -DSYSCONFDIR=/klnmp/mariadb-$1/etc -DMYSQL_UNIX_ADDR=/klnmp/mariadb-$1/mysql.sock \
         -DWITH_MYISAM_STORAGE_ENGINE=1 -DWITH_INNOBASE_STORAGE_ENGINE=1 -DWITH_ARCHIVE_STORAGE_ENGINE=1 -DWITH_BLACKHOLE_STORAGE_ENGINE=1 -DWITH_FEDERATED_STORAGE_ENGINE=1  -DWITH_PARTITION_STORAGE_ENGINE=1 \
-        -DWITH_SPHINX_STORAGE_ENGINE=1 -DWITH_READLINE=1 -DWITH_SSL=system -DWITH_ZLIB=system -DWITH_LIBWRAP=0 -DDEFAULT_CHARSET=utf8 -DDEFAULT_COLLATION=utf8_general_ci -DENABLED_LOCAL_INFILE=1 -DENABLE_PROFILING=1 -DWITHOUT_TOKUDB=1
+        -DWITH_SPHINX_STORAGE_ENGINE=1 -DWITH_READLINE=1 -DWITH_SSL=system -DWITH_ZLIB=system -DWITH_LIBWRAP=0 -DDEFAULT_CHARSET=utf8 -DDEFAULT_COLLATION=utf8_general_ci -DENABLED_LOCAL_INFILE=1 \
+        -DENABLE_PROFILING=1 -DWITHOUT_TOKUDB=1 || (echo "configure of mariadb is error！";uninstall)
     fi
-    make && make install && make clean
+    make && make install || (echo "make mariadb error！";uninstall)  && make clean || (echo "make install mariadb error！";uninstall)
 
     cd /klnmp/mariadb-$1/scripts && ./mysql_install_db --datadir=/klnmp/mariadb-$1/data/ --basedir=/klnmp/mariadb-$1/ --user=root && cp ../support-files/mysql.server /etc/rc.d/init.d/mysqld
 
@@ -127,30 +156,11 @@ function install_jemalloc() {
     mkdir /klnmp/jemalloc-$1
     cd
     wget https://github.com/jemalloc/jemalloc/releases/download/4.2.0/jemalloc-4.2.0.tar.bz2 && tar xf jemalloc-$1.tar.bz2 && cd jemalloc-$1
-    ./configure --prefix=/klnmp/jemalloc-$1 && make && make install && make clean
+    ./configure --prefix=/klnmp/jemalloc-$1 && make || (echo "configure jemalloc is error！";uninstall) && make install || (echo "make  jemalloc error！";uninstall) && make clean || (echo "make install jemalloc error！";uninstall)
     echo -e "\n/klnmp/jemalloc-$1/lib/\n" >> /etc/ld.so.conf.d/local.conf && ldconfig -v
     ln -sf /klnmp/jemalloc-$1/lib/libjemalloc.so.2 /usr/local/lib/libjemalloc.so
 }
 
-function uninstall(){
-    echo "停止mysql"
-        /etc/init.d/mysqld stop
-    echo
-
-    echo "停止php-fpm"
-        killall -9 php-fpm
-    echo
-
-    echo "停止nginx"
-        killall -9 nginx
-    echo
-    echo "uninstalling klnmp ..."
-
-    rm -rf /klnmp/php-7.1.4 /klnmp/nginx-1.12.0 /klnmp/nginx-1.12.0 /klnmp/jemalloc-4.2.0 /klnmp/mariadb-10.1.22 /klnmp/log /etc/init.d/mysqld
-
-    echo
-    echo "uninstalled klnmp success"
-}
 
 function start() {
     #statements
@@ -172,22 +182,27 @@ function start() {
 
     if [ "$php" == "y" ] || [ "$php" == "y" ] || [ "$php" == "y" ] || [ "$memory" == "y" ]; then
         install_prepare
+        let "SOFTS+=1"
     fi
 
     if [ "$memory" == "y" ]; then
         install_jemalloc 4.2.0
+        let "SOFTS+=1"
     fi
 
     if [ "$db" == "y" ]; then
         install_mariadb 10.1.22 $memory
+        let "SOFTS+=1"
     fi
 
     if [ "$php" == "y" ]; then
         install_php7 7.1.4
+        let "SOFTS+=1"
     fi
 
     if [ "$web" == "y" ]; then
         install_nginx 1.12.0 $memory
+        let "SOFTS+=1"
     fi
 
     cp -rf $basepath/config/klnmp /klnmp/klnmp
