@@ -81,7 +81,7 @@ function install_php7() {
     #statements
     echo "开始安装php-$1 ..."
     echo
-    cd
+    groupadd www && useradd -g www www && cd
     yum install -y  libmcrypt.x86_64 libmcrypt-devel.x86_64 mcrypt.x86_64 mhash libxml2 libxml2-devel.x86_64  curl-devel libjpeg-devel libpng-devel freetype-devel gd gd-devel
 
     ln -sf /klnmp/mariadb-10.1.22/lib/libmysqlclient.so /usr/lib64/ && ln -sf /klnmp/mariadb-10.1.22/lib/libmysqlclient.so.18 /usr/lib64/
@@ -158,7 +158,7 @@ function install_mariadb() {
     fi
     make && make install || (echo "编译 mariadb 失败！";uninstall)  && make clean || (echo "安装 mariadb 失败！";uninstall)
 
-    cd /klnmp/mariadb-$1/scripts && ./mysql_install_db --datadir=/klnmp/mariadb-$1/data/ --basedir=/klnmp/mariadb-$1/ --user=root && cp ../support-files/mysql.server /etc/rc.d/init.d/mysqld
+    cd /klnmp/mariadb-$1/scripts && ./mysql_install_db --defaults-file=/klnmp/mariadb-$1/etc/my.cnf --datadir=/klnmp/mariadb-$1/data/ --basedir=/klnmp/mariadb-$1/ --user=root && cp ../support-files/mysql.server /etc/rc.d/init.d/mysqld
 
     echo "export PATH=$PATH:/klnmp/mariadb-$1/bin" >>/etc/profile && source /etc/profile
 

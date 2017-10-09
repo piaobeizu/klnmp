@@ -6,7 +6,8 @@ start_all(){
     out_put
 
     out_put "start mariadb..."
-    /etc/init.d/mysqld start --user=root --defaults-file=/klnmp/mariadb-10.1.22/etc/my.cnf
+    cd /etc/init.d
+    ./mysqld start --user=root 
     out_put
 
     out_put "start nginx..."
