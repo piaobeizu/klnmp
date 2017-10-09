@@ -28,15 +28,18 @@ function output() {
 
 # check memory is or not enough
 function check_memory_and_swap(){
+    echo "检查内存大小是否足够 ..."
+    echo
     phymem=`free | grep "Mem:" |awk '{print $2}'`
     if [ "$phymem" -le "1024000" ]; then
-        echo "memory is not enough！start use the swap"
+        echo "内存不足，调整swap ..."
         swapoff -a
         dd if=/dev/zero of=/swapfile bs=1M count=2048
         mkswap /swapfile
         chmod -R 600 /swapfile
         swapon /swapfile
     fi
+    # TODO swap检查机制
 }
 
 function install_prepare() {
@@ -65,13 +68,13 @@ function uninstall(){
     echo "停止nginx"
         killall -9 nginx
     echo
-    echo "uninstalling klnmp ..."
+    echo "卸载 klnmp ..."
 
     rm -rf /klnmp/php-7.1.4 /klnmp/nginx-1.12.0 /klnmp/nginx-1.12.0 /klnmp/jemalloc-4.2.0 /klnmp/mariadb-10.1.22 /klnmp/log /etc/init.d/mysqld
     cd && rm -rf php* nginx* mariadb* jemalloc*
     
     echo
-    echo "uninstalled klnmp success"
+    echo "卸载 klnmp 完成"
 }
 
 function install_php7() {
@@ -91,7 +94,7 @@ function install_php7() {
       --with-libxml-dir=/usr --enable-xml --disable-rpath --enable-bcmath --enable-shmop --enable-sysvsem --enable-inline-optimization --with-curl --enable-mbregex --enable-fpm --enable-mbstring \
       --with-gd --enable-gd-native-ttf --with-openssl --with-mhash --enable-pcntl --enable-sockets --with-xmlrpc --enable-zip --enable-soap --enable-opcache --with-pdo-mysql --enable-maintainer-zts \
       --with-mysqli=shared,mysqlnd --with-pdo-mysql=shared,mysqlnd --enable-ftp --enable-session --with-gettext --with-jpeg-dir --with-freetype-dir --without-gdbm --disable-fileinfo --with-mcrypt \
-      --with-iconv --with-libdir=lib64 && make || (echo "configure of php is error！";uninstall)  && make install || (echo "make php error！";uninstall) && make clean || (echo "make install php error！";uninstall)
+      --with-iconv --with-libdir=lib64 && make || (echo "php configure 失败！";uninstall)  && make install || (echo "编译 php 失败！";uninstall) && make clean || (echo "安装 php 失败！";uninstall)
 
     echo -e "\nexport PATH=/klnmp/php-$1/bin:/klnmp/php-$1/sbin:$PATH\n" >> /etc/profile && source /etc/profile
 
@@ -111,7 +114,7 @@ function install_nginx() {
     if [ "$2" == "y" ]; then
         ./configure --prefix=/klnmp/nginx-$1 --with-http_ssl_module --with-http_stub_status_module --with-threads --with-ld-opt="-L /usr/local/lib64" && make && make install
     else
-        ./configure --prefix=/klnmp/nginx-$1 --with-http_ssl_module --with-http_stub_status_module --with-threads  && make || (echo "configure of nginx is error！";uninstall) && make install || (echo "make nginx error！";uninstall) && make clean || (echo "make install nginx error！";uninstall)
+        ./configure --prefix=/klnmp/nginx-$1 --with-http_ssl_module --with-http_stub_status_module --with-threads  && make || (echo "nginx configure 失败！";uninstall) && make install || (echo "编译 nginx 失败！";uninstall) && make clean || (echo "安装 nginx 失败！";uninstall)
     fi
 
     mkdir /klnmp/nginx-$1/conf/vhost && mv /klnmp/nginx-$1/conf/nginx.conf /klnmp/nginx-$1/conf/nginx.conf.bak
@@ -140,14 +143,14 @@ function install_mariadb() {
         cmake . -DCMAKE_INSTALL_PREFIX=/klnmp/mariadb-$1 -DMYSQL_DATADIR=/klnmp/mariadb-$1/data -DSYSCONFDIR=/klnmp/mariadb-$1/etc -DMYSQL_UNIX_ADDR=/klnmp/mariadb-$1/mysql.sock \
         -DWITH_MYISAM_STORAGE_ENGINE=1 -DWITH_INNOBASE_STORAGE_ENGINE=1 -DWITH_ARCHIVE_STORAGE_ENGINE=1 -DWITH_BLACKHOLE_STORAGE_ENGINE=1 -DWITH_FEDERATED_STORAGE_ENGINE=1  -DWITH_PARTITION_STORAGE_ENGINE=1 \
         -DWITH_SPHINX_STORAGE_ENGINE=1 -DWITH_READLINE=1 -DWITH_SSL=system -DWITH_ZLIB=system -DWITH_LIBWRAP=0 -DDEFAULT_CHARSET=utf8 -DDEFAULT_COLLATION=utf8_general_ci -DENABLED_LOCAL_INFILE=1 \
-        -DCMAKE_EXE_LINKER_FLAGS='-ljemalloc' -DWITH_SAFEMALLOC=OFF -DENABLE_PROFILING=1 -DWITHOUT_TOKUDB=1 || (echo "configure of mariadb is error！";uninstall)
+        -DCMAKE_EXE_LINKER_FLAGS='-ljemalloc' -DWITH_SAFEMALLOC=OFF -DENABLE_PROFILING=1 -DWITHOUT_TOKUDB=1 || (echo "mariadb configure 失败！";uninstall)
     else
         cmake . -DCMAKE_INSTALL_PREFIX=/klnmp/mariadb-$1 -DMYSQL_DATADIR=/klnmp/mariadb-$1/data -DSYSCONFDIR=/klnmp/mariadb-$1/etc -DMYSQL_UNIX_ADDR=/klnmp/mariadb-$1/mysql.sock \
         -DWITH_MYISAM_STORAGE_ENGINE=1 -DWITH_INNOBASE_STORAGE_ENGINE=1 -DWITH_ARCHIVE_STORAGE_ENGINE=1 -DWITH_BLACKHOLE_STORAGE_ENGINE=1 -DWITH_FEDERATED_STORAGE_ENGINE=1  -DWITH_PARTITION_STORAGE_ENGINE=1 \
         -DWITH_SPHINX_STORAGE_ENGINE=1 -DWITH_READLINE=1 -DWITH_SSL=system -DWITH_ZLIB=system -DWITH_LIBWRAP=0 -DDEFAULT_CHARSET=utf8 -DDEFAULT_COLLATION=utf8_general_ci -DENABLED_LOCAL_INFILE=1 \
-        -DENABLE_PROFILING=1 -DWITHOUT_TOKUDB=1 || (echo "configure of mariadb is error！";uninstall)
+        -DENABLE_PROFILING=1 -DWITHOUT_TOKUDB=1 || (echo "mariadb configure 失败！";uninstall)
     fi
-    make && make install || (echo "make mariadb error！";uninstall)  && make clean || (echo "make install mariadb error！";uninstall)
+    make && make install || (echo "编译 mariadb 失败！";uninstall)  && make clean || (echo "安装 mariadb 失败！";uninstall)
 
     cd /klnmp/mariadb-$1/scripts && ./mysql_install_db --datadir=/klnmp/mariadb-$1/data/ --basedir=/klnmp/mariadb-$1/ --user=root && cp ../support-files/mysql.server /etc/rc.d/init.d/mysqld
 
@@ -164,7 +167,7 @@ function install_jemalloc() {
     mkdir /klnmp/jemalloc-$1
     cd
     wget https://github.com/jemalloc/jemalloc/releases/download/4.2.0/jemalloc-4.2.0.tar.bz2 && tar xf jemalloc-$1.tar.bz2 && cd jemalloc-$1
-    ./configure --prefix=/klnmp/jemalloc-$1 && make || (echo "configure jemalloc is error！";uninstall) && make install || (echo "make  jemalloc error！";uninstall) && make clean || (echo "make install jemalloc error！";uninstall)
+    ./configure --prefix=/klnmp/jemalloc-$1 && make || (echo "jemalloc configure 失败！";uninstall) && make install || (echo "编译 jemalloc 失败！";uninstall) && make clean || (echo "安装 jemalloc 失败！";uninstall)
     echo -e "\n/klnmp/jemalloc-$1/lib/\n" >> /etc/ld.so.conf.d/local.conf && ldconfig -v
     ln -sf /klnmp/jemalloc-$1/lib/libjemalloc.so.2 /usr/local/lib/libjemalloc.so
 }
