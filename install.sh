@@ -6,16 +6,7 @@ if [ $(id -u) != "0" ]; then
     echo "Error: You must be root to run this script, please use root to install klnmp"
     exit 1
 fi
-# check memory is or not enough
-phymem=`free | grep "Mem:" |awk '{print $2}'`
-if [ "$phymem" -le "1024000" ]; then
-    echo "memory is not enough！start use the swap"
-    swapoff -a
-    dd if=/dev/zero of=/swapfile bs=1M count=2048
-    mkswap /swapfile
-    chmod -R 600 /swapfile
-    swapon /swapfile
-fi
+
 set -e
 SOFTS=0
 INSTALLED=0
@@ -35,8 +26,17 @@ function output() {
     echo $@
 }
 
+# check memory is or not enough
 function check_memory_and_swap(){
-
+    phymem=`free | grep "Mem:" |awk '{print $2}'`
+    if [ "$phymem" -le "1024000" ]; then
+        echo "memory is not enough！start use the swap"
+        swapoff -a
+        dd if=/dev/zero of=/swapfile bs=1M count=2048
+        mkswap /swapfile
+        chmod -R 600 /swapfile
+        swapon /swapfile
+    fi
 }
 
 function install_prepare() {
@@ -185,6 +185,7 @@ function start() {
 
     if [ "$php" == "y" ] || [ "$php" == "y" ] || [ "$php" == "y" ] || [ "$memory" == "y" ]; then
         install_prepare
+        check_memory_and_swap
         let "SOFTS+=1"
     fi
 
