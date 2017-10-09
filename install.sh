@@ -43,7 +43,7 @@ function install_prepare() {
     #statements
     echo "开始安装前的准备工作 ..."
     echo
-    if [ `cat /klnmp/.prepare` -ne "1" ]; then
+    if [ ! -f "/klnmp/.prepare" ] || [ `cat /klnmp/.prepare` -ne "1" ]; then
         yum install -y epel-release && yum -y update
         yum install -y wget vim gcc cmake make gcc-c++ openssl openssl-devel.x86_64 lsof chkconfig psmisc
         echo "创建klnmp项目 ..."
