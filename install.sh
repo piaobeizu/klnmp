@@ -123,7 +123,9 @@ function install_nginx() {
 function install_mariadb() {
     # remove existed mysql
     mariadb=`rpm -qa | grep mariadb`
-        
+    if [[ $check_results =~ "mariadb" ]]; then 
+        rpm -e --nodeps $mariadb
+    fi
     #statements
     echo "开始安装mariadb-$1 ..."
     echo
