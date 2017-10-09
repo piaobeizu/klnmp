@@ -43,11 +43,14 @@ function install_prepare() {
     #statements
     echo "开始安装前的准备工作 ..."
     echo
-    yum install -y epel-release && yum -y update
-    yum install -y wget vim gcc cmake make gcc-c++ openssl openssl-devel.x86_64 lsof chkconfig psmisc
-    echo "创建klnmp项目 ..."
-    echo
-    mkdir /klnmp /klnmp/www /klnmp/log /klnmp/log/php /klnmp/log/mariadb /klnmp/log/nginx && chmod -R 777 /klnmp/log
+    if [ `cat /klnmp/.prepare` -ne "1" ]; then
+        yum install -y epel-release && yum -y update
+        yum install -y wget vim gcc cmake make gcc-c++ openssl openssl-devel.x86_64 lsof chkconfig psmisc
+        echo "创建klnmp项目 ..."
+        echo
+        mkdir /klnmp /klnmp/www /klnmp/log /klnmp/log/php /klnmp/log/mariadb /klnmp/log/nginx && chmod -R 777 /klnmp/log
+        echo "1" > /klnmp/.prepare
+    fi
 }
 
 function uninstall(){
