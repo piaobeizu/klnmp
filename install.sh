@@ -28,9 +28,9 @@ function output() {
 
 # check memory is or not enough
 function check_memory_and_swap(){
-    echo "检查内存大小是否足够 ..."
-    echo
     phymem=`free | grep "Mem:" |awk '{print $2}'`
+    echo "检查内存大小:${phymem}..."
+    echo
     if [ "$phymem" -le "1024000" ]; then
         echo "内存不足，调整swap ..."
         swapoff -a
@@ -51,7 +51,7 @@ function install_prepare() {
         yum install -y wget vim gcc cmake make gcc-c++ openssl openssl-devel.x86_64 lsof chkconfig psmisc
         echo "创建klnmp项目 ..."
         echo
-        mkdir /klnmp /klnmp/www /klnmp/log /klnmp/log/php /klnmp/log/mariadb /klnmp/log/nginx && chmod -R 777 /klnmp/log
+        mkdir -p /klnmp /klnmp/www /klnmp/log /klnmp/log/php /klnmp/log/mariadb /klnmp/log/nginx && chmod -R 777 /klnmp/log
         echo "1" > /klnmp/.prepare
     fi
 }
@@ -125,8 +125,14 @@ function install_nginx() {
 
 function install_mariadb() {
     # remove existed mysql
-    mariadb=`rpm -qa | grep mariadb`
-    if [[ $check_results =~ "mariadb" ]]; then 
+    mariadb=`rpm -qa mariadb`    
+    if [[ $mariadb =~ "mariadb" ]]; then 
+        echo "删除系统自带的mysql："${mariadb}
+        rpm -e --nodeps ${mariadb}
+    fi
+    mariadb=`rpm -qa mysql`    
+    if [[ $mariadb =~ "mysql" ]]; then 
+        echo "删除系统自带的mysql："${mariadb}
         rpm -e --nodeps ${mariadb}
     fi
     #statements
