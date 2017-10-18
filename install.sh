@@ -167,7 +167,7 @@ function install_mariadb() {
 
     cd /klnmp/mariadb-$1/scripts && ./mysql_install_db --defaults-file=/klnmp/mariadb-$1/etc/my.cnf --datadir=/klnmp/mariadb-$1/data/ --basedir=/klnmp/mariadb-$1/ --user=mysql && cp ../support-files/mysql.server /etc/rc.d/init.d/mysqld
     #给root用户设置密码klnmproot
-    /klnmp/mariadb-10.1.22/bin/mysqladmin -u root password 'klnmproot'
+    #/klnmp/mariadb-10.1.22/bin/mysqladmin -u root password 'klnmproot'
     #echo "export PATH=$PATH:/klnmp/mariadb-$1/bin" >>/etc/profile && source /etc/profile
 
     cp -rf $basepath/config/my.cnf /klnmp/mariadb-$1/etc
