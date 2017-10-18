@@ -11,7 +11,7 @@ set -e
 SOFTS=0
 INSTALLED=0
 basepath=$(cd `dirname $0`; pwd)
-mariadb_user = mysql
+mariadb_user=mysql
 clear
 echo
 echo "========================================================================="
