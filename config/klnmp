@@ -7,7 +7,7 @@ start_all(){
 
     out_put "start mariadb..."
     cd /etc/init.d
-    ./mysqld start --user=root 
+    ./mysqld start --user=mysql 
     out_put
 
     out_put "start nginx..."

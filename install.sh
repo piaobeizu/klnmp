@@ -125,6 +125,7 @@ function install_nginx() {
 
 function install_mariadb() {
     # remove existed mysql
+    useradd mysql
     mariadb=`rpm -qa mariadb`    
     if [[ $mariadb =~ "mariadb" ]]; then 
         echo "删除系统自带的mysql："${mariadb}
@@ -158,11 +159,13 @@ function install_mariadb() {
     fi
     make && make install || (echo "编译 mariadb 失败！";uninstall)  && make clean || (echo "安装 mariadb 失败！";uninstall)
 
-    cd /klnmp/mariadb-$1/scripts && ./mysql_install_db --defaults-file=/klnmp/mariadb-$1/etc/my.cnf --datadir=/klnmp/mariadb-$1/data/ --basedir=/klnmp/mariadb-$1/ --user=root && cp ../support-files/mysql.server /etc/rc.d/init.d/mysqld
-
-    echo "export PATH=$PATH:/klnmp/mariadb-$1/bin" >>/etc/profile && source /etc/profile
+    cd /klnmp/mariadb-$1/scripts && ./mysql_install_db --defaults-file=/klnmp/mariadb-$1/etc/my.cnf --datadir=/klnmp/mariadb-$1/data/ --basedir=/klnmp/mariadb-$1/ --user=mysql && cp ../support-files/mysql.server /etc/rc.d/init.d/mysqld
+    #给root用户设置密码klnmproot
+    /klnmp/mariadb-10.1.22/bin/mysqladmin -u root password 'klnmproot'
+    #echo "export PATH=$PATH:/klnmp/mariadb-$1/bin" >>/etc/profile && source /etc/profile
 
     cp -rf $basepath/config/my.cnf /klnmp/mariadb-$1/etc
+    chown -R mysql:root /klnmp/mariadb-$1 && chmod -R 775 /klnmp/mariadb-$1
 }
 
 
@@ -230,8 +233,8 @@ function start() {
     #清理安装包
     cd && rm -rf php* nginx* mariadb* jemalloc*
     #清理swap
-    swapoff /swapfile
-    rm /swapfile
+    #swapoff /swapfile
+    #rm /swapfile
     clear
     echo
     echo "========================================================================="
