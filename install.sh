@@ -11,6 +11,7 @@ set -e
 SOFTS=0
 INSTALLED=0
 basepath=$(cd `dirname $0`; pwd)
+mariadb_user = mysql
 clear
 echo
 echo "========================================================================="
@@ -124,8 +125,13 @@ function install_nginx() {
 }
 
 function install_mariadb() {
+    # check user is existed
+    egrep "^$mariadb_user" /etc/passwd >& /dev/null
+    if [ $? -ne 0 ]
+    then
+        useradd $mariadb_user
+    fi
     # remove existed mysql
-    useradd mysql
     mariadb=`rpm -qa mariadb`    
     if [[ $mariadb =~ "mariadb" ]]; then 
         echo "删除系统自带的mysql："${mariadb}
@@ -240,6 +246,8 @@ function start() {
     echo "========================================================================="
     echo
     echo "安装成功，尽情享受klnmp带来的便利吧..."
+    echo 
+    echo "mariadb root账户的密码是：klnmproot"
     echo
     echo "klnmp start|stop|restart"
     echo
